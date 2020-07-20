@@ -1,4 +1,4 @@
-jmp main
+	jmp main
 
 ; Variaveis da Moto ------------------
 
@@ -39,6 +39,8 @@ static motoBaixo, #'V'
 
 ; Variaveis de movimentação -----
 
+randomSeed : var #1
+
 Direcao1 : var #1
 Static Direcao1, #2 ; indo para a direita inicialmente
 
@@ -56,13 +58,33 @@ static offsetdelay, #50
 ;
 ; inicio do programa
 ;
-main :
+
+checaMov:
+	
+		loadn r0, #rastro_map
+		loadn r1, #'#'
+		add r0, r0, r2
+		loadi r7, r0
+		cmp r7, r1
+		jeq checaFinal
+
+		loadn r0, #motoPos2
+		storei r0, r2
+
+		jmp MovimentaFinal
+checaFinal:
+		jmp MudaDir2
+main:
 		call constroiCenario ; /contrconstroi cenario e tela de menu
 		; Espera até o usuário apertar enter para começar o jogo
+menu:
 		loadn r2, #13 ; Caracter do enter
-
+		loadn r0, #0
+		loadn r3, #156895
 loopmenu: 
-
+		inc r0
+		cmp r0, r3
+		jeq menu
 		inchar r1 ; Le teclado
 		cmp r1,r2
 		jeq iniciaJogo ; Se apertou enter, inicia o jogo.	
@@ -70,9 +92,12 @@ loopmenu:
 
 iniciaJogo: ; --------------------- INICIO
 		
-		
+		loadn r7, #randomSeed
+		storei r7, r0
+
 		call apagaMenu ; Apaga o menu do jogo
-		
+		call constroiCenario
+	
 		load r0,motoPos1       ; Carrega posição da moto
 		load r1,motoCaracter1	; carrega caracter da cabeça
 		outchar r1,r0			; desenha cabeça
@@ -138,18 +163,29 @@ fim_loop:
 
 MudaDir2:
 
-		;inchar r0
-		loadn r0, #'i'
-		loadn r1,#'i' ; Tecla de cima
+		load r7, randomSeed
+		loadn r2, #7
+		mul r7, r2, r7
+		loadn r2, #2
+		add r7, r7, r2
+		loadn r2, #156895
+		mod r7, r7, r2
+		loadn r2, #randomSeed
+		storei r2, r7
+
+		loadn r2, #6 
+		mod r0, r7, r2
+		
+		loadn r1,#0 ; Tecla de cima
 		cmp r1,r0
 		jeq mudaDirCima2
-		loadn r1,#'k'; Tecla de baixo
+		loadn r1,#1; Tecla de baixo
 		cmp r1,r0
 		jeq mudaDirBaixo2
-		loadn r1,#'l' ; Tecla de direita
+		loadn r1,#2 ; Tecla de direita
 		cmp r1,r0
 		jeq mudaDirDireita2
-		loadn r1,#'j' ; Tecla de esquerda
+		loadn r1,#3 ; Tecla de esquerda
 		cmp r1,r0
 		jeq mudaDirEsquerda2
 	
@@ -292,58 +328,70 @@ Movimenta2:
 		cmp r1,r0
 		jeq moveEsquerda		; Direita
 		
-		jmp MovimentaFinal
+		jmp checaMov
 
 moveCima:						; Movimenta cabeça para cima
 		loadn r0,#40
 		loadi r5, r3
 		
 		sub r2,r5,r0
+
+		loadn r7, #motoPos2
+		cmp r7, r3
+		jeq checaMov
 		storei r3, r2
 		
 		loadn r2, #motoPos1
 		cmp r3,r2
 		jeq Movimenta2
-		jmp MovimentaFinal
 		
 moveDireita:					; Movimenta cabeça para a direita
 		loadn r0,#1
 		loadi r5, r3
 		
 		add r2,r5,r0
+
+		loadn r7, #motoPos2
+		cmp r7, r3
+		jeq checaMov
 		storei r3, r2
 		
 		loadn r2, #motoPos1
 		cmp r3,r2
 		jeq Movimenta2
-		jmp MovimentaFinal
 		
 moveBaixo:						; Movimenta cabeça para baixo
 		loadn r0,#40
 		loadi r5, r3
 		
 		add r2,r5,r0
+		loadn r7, #motoPos2
+		cmp r7, r3
+		jeq checaMov
 		storei r3, r2
 		
 		loadn r2, #motoPos1
 		cmp r3,r2
 		jeq Movimenta2
-		jmp MovimentaFinal
 		
 moveEsquerda:					; Movimenta cabeça para a esquerda
 		loadn r0,#1
 		loadi r5, r3
 		
 		sub r2,r5,r0
+
+		loadn r7, #motoPos2
+		cmp r7, r3
+		jeq checaMov
 		storei r3, r2
 		
 		loadn r2, #motoPos1
 		cmp r3,r2
 		jeq Movimenta2
-		jmp MovimentaFinal
 		
 MovimentaFinal:				   	
 
+;;;;;;;;;;;;;;;;;; rastro ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		load r6, motoRastro1
 		loadn r7, #2304
 		add r6, r6, r7
@@ -363,7 +411,8 @@ MovimentaFinal:
 		
 		add r3, r5, r3
 		storei r3, r6
-	
+
+;;;;;;;;;;;;;;;;;;;;;; motos ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		load r4, motoCaracter1
 		load r3, motoPos1
 	
@@ -378,7 +427,7 @@ MovimentaFinal:
 		loadn r7, #3072
 		add r4, r4, r7
 		outchar r4,r3	   ; Desenhando caracter de cabeça na nova posição calculada	
-		
+
 		call Colisao	   ; função que checa colisao com as paredes com o corpo e com a comida	
 
 return:
@@ -392,6 +441,7 @@ Colisao:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 		load r0, motoPos1
+
 		loadn r1,#parede	   ; Checa colisão com as paredes
 		add r1,r1,r0
 		loadi r3, r1
@@ -418,6 +468,11 @@ Colisao:
 		add r1,r1,r0
 		loadi r3, r1
 		cmp r2,r3
+		jeq GameOver
+
+		load r0, motoPos1
+		load r1, motoPos2
+		cmp r1, r0
 		jeq GameOver
 
 fimcolisao:
@@ -484,7 +539,7 @@ reinicia2:
 		;-------------------------
 		
 		loadn r2, #13
-		jmp main
+		jmp menu
 			 
 apagaMenu: ; Apaga a região central da tela onde escreve game over e o menu inicial
 
