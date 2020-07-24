@@ -33,7 +33,7 @@ motoBaixo : var #1
 static motoEsq, #'<' ; possibilidades para a cabeça
 static motoDir, #'>'
 static motoCima, #'^'
-static motoBaixo, #'V'
+static motoBaixo, #'v'
 
 ; -------------------------------
 
@@ -71,7 +71,7 @@ checaMov:
 		;breakp
 
 		loadn r7, #tentativas
-		loadn r6, #20
+		loadn r6, #200
 		loadi r7, r7
 		cmp r6, r7
 		jeq MovimentaFinal
@@ -203,7 +203,7 @@ MudaDir2:
 		loadn r2, #randomSeed
 		storei r2, r7
 
-		loadn r2, #6 
+		loadn r2, #10 
 		mod r0, r7, r2
 		
 		loadn r1,#0 ; Tecla de cima
@@ -505,13 +505,13 @@ Colisao:
 		add r1,r1,r0
 		loadi r3, r1
 		cmp r2,r3
-		jeq GameOver
+		jeq blueW
 
 		loadn r1,#rastro_map	   ; Checa colisão com as paredes
 		add r1,r1,r0
 		loadi r3, r1
 		cmp r2,r3
-		jeq GameOver
+		jeq blueW
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -521,27 +521,39 @@ Colisao:
 		add r1,r1,r0
 		loadi r3, r1
 		cmp r2,r3
-		jeq GameOver
+		jeq redW
 
 		loadn r1,#rastro_map	   ; Checa colisão com as paredes
 		add r1,r1,r0
 		loadi r3, r1
 		cmp r2,r3
-		jeq GameOver
+		jeq redW
 
 		load r0, motoPos1
 		load r1, motoPos2
 		cmp r1, r0
-		jeq GameOver
+		jeq emp
 
 fimcolisao:
 		rts
 
 ;--------------------------------------------- GAME OVER
-GameOver:
+;GameOver:
 		
-		loadn r0, #gameover ; Caracter que constitui a parede
-		
+		;loadn r0, #gameover ; Caracter que constitui a parede
+		;jmp ini_print	
+redW:
+		loadn r0, #red_win
+		loadn r6, #2304
+		jmp ini_print
+blueW:
+		loadn r0, #blue_win
+		loadn r6, #3072
+		jmp ini_print
+emp:
+		loadn r0, #draw
+		loadn r6, #0
+ini_print:
 		;Constrзi parede superior
 		loadn r1, #0
 		loadn r2, #1200
@@ -551,6 +563,7 @@ GameOver:
 loop2:	cmp r1,r2
 		jeq reinicia
 		loadi r3,r0
+		add r3, r3, r6
 		outchar r3,r1
 		inc r1
 		inc r0
@@ -648,5 +661,11 @@ FIM:
 
 parede: string "############## TRON GAME ################                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      #########################################"
 
-gameover: string "#########################################                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##              GAME OVER               ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ######################################### "
+blue_win: string "#########################################                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##              BLUE WINS               ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ######################################### "
+
+red_win: string "#########################################                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##               RED WINS               ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ######################################### "
 rastro_map: string "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "
+draw: string "#########################################                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                 DRAW                 ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ######################################### "
+
+rastro_map: string "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "
+"                                                                                                                                                                                                                                                                                                                                                                                                                                             /$$$$$$$$$$$$$                        |$$$$$$$$$$$$$$$$     /$$$$    /$$$   $$    | $$  | $$   $$$  /$$ $$ | $$$$  $$  | $$  | $$$$$$$  | $$  $$ | $$  $$$$  | $$  | $$ $$$   | $$  |$$ | $$  $$$  | $$  | $$  $$$  |  $$$$$/ | $$   $$  |/  |/   $$$  ____/ |_/     _                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    "
