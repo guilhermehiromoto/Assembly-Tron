@@ -55,13 +55,35 @@ decdelay : var #1
 static decdelay, #1000
 static valordelay, #1000000
 static offsetdelay, #50
+
+;Flags
+flag : var #1
+static flag, #0
+
+tentativas : var #1
+static tentativas, #0
+
 ;
 ; inicio do programa
 ;
 
 checaMov:
+		;breakp
+
+		loadn r7, #tentativas
+		loadn r6, #20
+		loadi r7, r7
+		cmp r6, r7
+		jeq MovimentaFinal
 	
 		loadn r0, #rastro_map
+		loadn r1, #'#'
+		add r0, r0, r2
+		loadi r7, r0
+		cmp r7, r1
+		jeq checaFinal
+
+		loadn r0, #parede
 		loadn r1, #'#'
 		add r0, r0, r2
 		loadi r7, r0
@@ -73,6 +95,15 @@ checaMov:
 
 		jmp MovimentaFinal
 checaFinal:
+		loadn r7, #flag
+		loadn r0, #1
+		storei r7, r0
+
+		loadn r7, #tentativas
+		loadi r6, r7
+		loadn r0, #1
+		add r6, r6, r0
+		storei r7, r6
 		jmp MudaDir2
 main:
 		call constroiCenario ; /contrconstroi cenario e tela de menu
@@ -91,7 +122,6 @@ loopmenu:
 		jmp loopmenu   ; Se não, fica em loop	
 
 iniciaJogo: ; --------------------- INICIO
-		
 		loadn r7, #randomSeed
 		storei r7, r0
 
@@ -189,6 +219,13 @@ MudaDir2:
 		cmp r1,r0
 		jeq mudaDirEsquerda2
 	
+checaFlag:
+		loadn r7, #flag	
+		loadi r7, r7
+		loadn r6, #1
+		cmp r6, r7
+		jeq Movimenta2
+
 		jmp Movimenta
 		
 ; Atualiza direção de movimento da moto 1
@@ -246,50 +283,50 @@ mudaDirCima2:
 			 load r2, Direcao2			; Carrega direção atual
 			 loadn r3,#3				; Carrega direção que não poderia mudar o movimento
 			 cmp r2,r3					; Compara se são iguais
-			 jeq Movimenta				; Se sim, não altera direção
+			 jeq checaFlag
 			 load r1,motoCima			; Se não, carrega caracter de cabeça para cima
 			 store motoCaracter2, r1	; atualiza caracter da cabeça com o carregado acima
 			 load r1, rastroCaracter_ver			; Se não, carrega caracter de cabeça para cima
 			 store motoRastro2, r1	; atualiza caracter da cabeça com o carregado acima
 			 loadn r0,#1				; carrega 1 em r0
 			 store Direcao2,r0			; atualiza direção como 1 (cima)
-			 jmp Movimenta
+			 jmp checaFlag
 mudaDirDireita2: 						; O mesmo para as outras direções		
 			 load r2, Direcao2
 			 loadn r3,#4
 			 cmp r2,r3
-			 jeq Movimenta
+			 jeq checaFlag
 			 load r1,motoDir
 			 store motoCaracter2, r1
 			 load r1, rastroCaracter_hor			; Se não, carrega caracter de cabeça para cima
 			 store motoRastro2, r1	; atualiza caracter da cabeça com o carregado acima
 			 loadn r0,#2 
 			 store Direcao2,r0
-			 jmp Movimenta
+			 jmp checaFlag
 mudaDirBaixo2: 
 			 load r2, Direcao2
 			 loadn r3,#1
 			 cmp r2,r3
-			 jeq Movimenta
+			 jeq checaFlag
 			 load r1,motoBaixo
 			 store motoCaracter2, r1 
 			 load r1, rastroCaracter_ver			; Se não, carrega caracter de cabeça para cima
 			 store motoRastro2, r1	; atualiza caracter da cabeça com o carregado acima
 			 loadn r0,#3
 			 store Direcao2,r0
-			 jmp Movimenta
+			 jmp checaFlag
 mudaDirEsquerda2: 
 			 load r2, Direcao2
 			 loadn r3,#2
 			 cmp r2,r3
-			 jeq Movimenta
+			 jeq checaFlag
 			 load r1,motoEsq
 			 store motoCaracter2, r1 
 			 load r1, rastroCaracter_hor			; Se não, carrega caracter de cabeça para cima
 			 store motoRastro2, r1	; atualiza caracter da cabeça com o carregado acima
 			 loadn r0,#4
 			 store Direcao2,r0
-			 jmp Movimenta
+			 jmp checaFlag
 
 ; Continua movimentação da cobra
 Movimenta:
@@ -299,97 +336,119 @@ Movimenta:
 		load r4, motoPos1
 		loadn r1, #1; 
 		cmp r1,r0
-		jeq moveCima			; Cima
+		jeq moveCima1			; Cima
 		loadn r1,#3;
 		cmp r1,r0
-		jeq moveBaixo			; Baixo
+		jeq moveBaixo1			; Baixo
 		loadn r1,#2 ; 
 		cmp r1,r0
-		jeq moveDireita			; Esquerda
+		jeq moveDireita1		; Esquerda
 		loadn r1,#4 ;
 		cmp r1,r0
-		jeq moveEsquerda		; Direita
+		jeq moveEsquerda1		; Direita
 		
 Movimenta2:
+
+		;Zera a flag
+		loadn r6, #flag
+		loadn r7, #0
+		storei r6, r7
 
 		load r0, Direcao2		; Verifica qual a direção demovimento, para calcular a nova posição da cabeça
 		loadn r3, #motoPos2
 		load r5, motoPos2
 		loadn r1, #1; 
 		cmp r1,r0
-		jeq moveCima			; Cima
+		jeq moveCima2			; Cima
 		loadn r1,#3;
 		cmp r1,r0
-		jeq moveBaixo			; Baixo
+		jeq moveBaixo2			; Baixo
 		loadn r1,#2 ; 
 		cmp r1,r0
-		jeq moveDireita			; Esquerda
+		jeq moveDireita2		; Esquerda
 		loadn r1,#4 ;
 		cmp r1,r0
-		jeq moveEsquerda		; Direita
+		jeq moveEsquerda2		; Direita
+		
+		;jmp checaMov
+
+moveCima1:						; Movimenta cabeça para cima
+		loadn r0,#40
+		loadi r5, r3
+		
+		sub r2,r5,r0
+
+		storei r3, r2
+		
+		jmp Movimenta2
+		
+moveDireita1:					; Movimenta cabeça para a direita
+		loadn r0,#1
+		loadi r5, r3
+		
+		add r2,r5,r0
+
+		storei r3, r2
+		
+		jmp Movimenta2
+		
+moveBaixo1:						; Movimenta cabeça para baixo
+		loadn r0,#40
+		loadi r5, r3
+		
+		add r2,r5,r0
+		storei r3, r2
+		
+		jmp Movimenta2
+		
+moveEsquerda1:					; Movimenta cabeça para a esquerda
+		loadn r0,#1
+		loadi r5, r3
+		
+		sub r2,r5,r0
+
+		storei r3, r2
+		
+		jmp Movimenta2
+		
+moveCima2:						; Movimenta cabeça para cima
+		loadn r0,#40
+		loadi r5, r3
+		
+		sub r2,r5,r0
+
+		jmp checaMov
+		
+moveDireita2:					; Movimenta cabeça para a direita
+		loadn r0,#1
+		loadi r5, r3
+		
+		add r2,r5,r0
+
+		jmp checaMov
+		
+moveBaixo2:						; Movimenta cabeça para baixo
+		loadn r0,#40
+		loadi r5, r3
+		
+		add r2,r5,r0
 		
 		jmp checaMov
-
-moveCima:						; Movimenta cabeça para cima
-		loadn r0,#40
-		loadi r5, r3
 		
-		sub r2,r5,r0
-
-		loadn r7, #motoPos2
-		cmp r7, r3
-		jeq checaMov
-		storei r3, r2
-		
-		loadn r2, #motoPos1
-		cmp r3,r2
-		jeq Movimenta2
-		
-moveDireita:					; Movimenta cabeça para a direita
-		loadn r0,#1
-		loadi r5, r3
-		
-		add r2,r5,r0
-
-		loadn r7, #motoPos2
-		cmp r7, r3
-		jeq checaMov
-		storei r3, r2
-		
-		loadn r2, #motoPos1
-		cmp r3,r2
-		jeq Movimenta2
-		
-moveBaixo:						; Movimenta cabeça para baixo
-		loadn r0,#40
-		loadi r5, r3
-		
-		add r2,r5,r0
-		loadn r7, #motoPos2
-		cmp r7, r3
-		jeq checaMov
-		storei r3, r2
-		
-		loadn r2, #motoPos1
-		cmp r3,r2
-		jeq Movimenta2
-		
-moveEsquerda:					; Movimenta cabeça para a esquerda
+moveEsquerda2:					; Movimenta cabeça para a esquerda
 		loadn r0,#1
 		loadi r5, r3
 		
 		sub r2,r5,r0
 
-		loadn r7, #motoPos2
-		cmp r7, r3
-		jeq checaMov
-		storei r3, r2
-		
-		loadn r2, #motoPos1
-		cmp r3,r2
-		jeq Movimenta2
-		
+		jmp checaMov
+
 MovimentaFinal:				   	
+
+		; Zera tentativas
+		loadn r7, #tentativas
+		loadn r6, #0
+		storei r7, r6
 
 ;;;;;;;;;;;;;;;;;; rastro ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		load r6, motoRastro1
