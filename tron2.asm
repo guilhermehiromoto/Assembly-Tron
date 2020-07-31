@@ -7,6 +7,10 @@ static motoPos1, #610 ; posicao inical da cobra
 motoPos2 : var #1; variavel de posição da moto
 static motoPos2, #630 ; posicao inical da cobra
 
+tecla1 : var #1 
+static tecla1, #'d' ; cabeça inicial (indo para a direita)
+
+
 ; Caracteres da cabeça da cobra--------
 
 motoCaracter1 : var #1 
@@ -67,44 +71,6 @@ static tentativas, #0
 ; inicio do programa
 ;
 
-checaMov:
-		;breakp
-
-		loadn r7, #tentativas
-		loadn r6, #200
-		loadi r7, r7
-		cmp r6, r7
-		jeq MovimentaFinal
-	
-		loadn r0, #rastro_map
-		loadn r1, #'#'
-		add r0, r0, r2
-		loadi r7, r0
-		cmp r7, r1
-		jeq checaFinal
-
-		loadn r0, #parede
-		loadn r1, #'#'
-		add r0, r0, r2
-		loadi r7, r0
-		cmp r7, r1
-		jeq checaFinal
-
-		loadn r0, #motoPos2
-		storei r0, r2
-
-		jmp MovimentaFinal
-checaFinal:
-		loadn r7, #flag
-		loadn r0, #1
-		storei r7, r0
-
-		loadn r7, #tentativas
-		loadi r6, r7
-		loadn r0, #1
-		add r6, r6, r0
-		storei r7, r6
-		jmp MudaDir2
 main:
 		call constroiCenario ; /contrconstroi cenario e tela de menu
 		; Espera até o usuário apertar enter para começar o jogo
@@ -144,11 +110,11 @@ delay:
 	push r2
 	push r1
 	
-	loadn r1, #30  ; a
+	loadn r1, #20  ; a
    Delay_volta2:				;Quebrou o contador acima em duas partes (dois loops de decremento)
 	loadn r0, #900000	; b
    Delay_volta: 
-	dec r0					; (4*a + 6)b = 1000000  == 1 seg  em um clock de 1MHz
+	dec r0				; (4*a + 6)b = 1000000  == 1 seg  em um clock de 1MHz
 	jnz Delay_volta	
 	dec r1
 	jnz Delay_volta2
@@ -163,6 +129,10 @@ MudaDir: ; ------------------------------------------------------------- Inicia 
 
 		; Checa se alguma tecla de movimento foi pressionada
 		inchar r0
+		loadn r1, #tecla1
+		storei r1, r0	
+
+		load r0, tecla1
 		loadn r1,#'w' ; Tecla de cima
 		cmp r1,r0
 		jeq mudaDirCima1
@@ -175,6 +145,26 @@ MudaDir: ; ------------------------------------------------------------- Inicia 
 		loadn r1,#'a' ; Tecla de esquerda
 		cmp r1,r0
 		jeq mudaDirEsquerda1
+
+
+MudaDir2: ; ------------------------------------------------------------- Inicia movimentação da cobra
+		load r0, tecla1
+		; Checa se alguma tecla de movimento foi pressionada
+		
+		loadn r1,#'i' ; Tecla de cima
+		cmp r1,r0
+		jeq mudaDirCima2
+		loadn r1,#'k'; Tecla de baixo
+		cmp r1,r0
+		jeq mudaDirBaixo2
+		loadn r1,#'l' ; Tecla de direita
+		cmp r1,r0
+		jeq mudaDirDireita2
+		loadn r1,#'j' ; Tecla de esquerda
+		cmp r1,r0
+		jeq mudaDirEsquerda2
+
+		jmp Movimenta
 
 delay2:
 		push r1
@@ -190,44 +180,7 @@ loop_delay:
 fim_loop:
 		pop r2
 		pop r1
-
-MudaDir2:
-
-		load r7, randomSeed
-		loadn r2, #7
-		mul r7, r2, r7
-		loadn r2, #2
-		add r7, r7, r2
-		loadn r2, #156895
-		mod r7, r7, r2
-		loadn r2, #randomSeed
-		storei r2, r7
-
-		loadn r2, #10 
-		mod r0, r7, r2
-		
-		loadn r1,#0 ; Tecla de cima
-		cmp r1,r0
-		jeq mudaDirCima2
-		loadn r1,#1; Tecla de baixo
-		cmp r1,r0
-		jeq mudaDirBaixo2
-		loadn r1,#2 ; Tecla de direita
-		cmp r1,r0
-		jeq mudaDirDireita2
-		loadn r1,#3 ; Tecla de esquerda
-		cmp r1,r0
-		jeq mudaDirEsquerda2
 	
-checaFlag:
-		loadn r7, #flag	
-		loadi r7, r7
-		loadn r6, #1
-		cmp r6, r7
-		jeq Movimenta2
-
-		jmp Movimenta
-		
 ; Atualiza direção de movimento da moto 1
 mudaDirCima1:
 			 load r2, Direcao1			; Carrega direção atual
@@ -283,50 +236,50 @@ mudaDirCima2:
 			 load r2, Direcao2			; Carrega direção atual
 			 loadn r3,#3				; Carrega direção que não poderia mudar o movimento
 			 cmp r2,r3					; Compara se são iguais
-			 jeq checaFlag
+			 jeq Movimenta
 			 load r1,motoCima			; Se não, carrega caracter de cabeça para cima
 			 store motoCaracter2, r1	; atualiza caracter da cabeça com o carregado acima
 			 load r1, rastroCaracter_ver			; Se não, carrega caracter de cabeça para cima
 			 store motoRastro2, r1	; atualiza caracter da cabeça com o carregado acima
 			 loadn r0,#1				; carrega 1 em r0
 			 store Direcao2,r0			; atualiza direção como 1 (cima)
-			 jmp checaFlag
+			 jmp Movimenta
 mudaDirDireita2: 						; O mesmo para as outras direções		
 			 load r2, Direcao2
 			 loadn r3,#4
 			 cmp r2,r3
-			 jeq checaFlag
+			 jeq Movimenta
 			 load r1,motoDir
 			 store motoCaracter2, r1
 			 load r1, rastroCaracter_hor			; Se não, carrega caracter de cabeça para cima
 			 store motoRastro2, r1	; atualiza caracter da cabeça com o carregado acima
 			 loadn r0,#2 
 			 store Direcao2,r0
-			 jmp checaFlag
+			 jmp Movimenta
 mudaDirBaixo2: 
 			 load r2, Direcao2
 			 loadn r3,#1
 			 cmp r2,r3
-			 jeq checaFlag
+			 jeq Movimenta
 			 load r1,motoBaixo
 			 store motoCaracter2, r1 
 			 load r1, rastroCaracter_ver			; Se não, carrega caracter de cabeça para cima
 			 store motoRastro2, r1	; atualiza caracter da cabeça com o carregado acima
 			 loadn r0,#3
 			 store Direcao2,r0
-			 jmp checaFlag
+			 jmp Movimenta
 mudaDirEsquerda2: 
 			 load r2, Direcao2
 			 loadn r3,#2
 			 cmp r2,r3
-			 jeq checaFlag
+			 jeq Movimenta
 			 load r1,motoEsq
 			 store motoCaracter2, r1 
 			 load r1, rastroCaracter_hor			; Se não, carrega caracter de cabeça para cima
 			 store motoRastro2, r1	; atualiza caracter da cabeça com o carregado acima
 			 loadn r0,#4
 			 store Direcao2,r0
-			 jmp checaFlag
+			 jmp Movimenta
 
 ; Continua movimentação da cobra
 Movimenta:
@@ -349,10 +302,6 @@ Movimenta:
 		
 Movimenta2:
 
-		;Zera a flag
-		loadn r6, #flag
-		loadn r7, #0
-		storei r6, r7
 
 		load r0, Direcao2		; Verifica qual a direção demovimento, para calcular a nova posição da cabeça
 		loadn r3, #motoPos2
@@ -417,7 +366,9 @@ moveCima2:						; Movimenta cabeça para cima
 		
 		sub r2,r5,r0
 
-		jmp checaMov
+		storei r3, r2
+		
+		jmp MovimentaFinal
 		
 moveDireita2:					; Movimenta cabeça para a direita
 		loadn r0,#1
@@ -425,15 +376,19 @@ moveDireita2:					; Movimenta cabeça para a direita
 		
 		add r2,r5,r0
 
-		jmp checaMov
+		storei r3, r2
 		
+		jmp MovimentaFinal		
+
 moveBaixo2:						; Movimenta cabeça para baixo
 		loadn r0,#40
 		loadi r5, r3
 		
 		add r2,r5,r0
 		
-		jmp checaMov
+		storei r3, r2
+		
+		jmp MovimentaFinal
 		
 moveEsquerda2:					; Movimenta cabeça para a esquerda
 		loadn r0,#1
@@ -441,14 +396,11 @@ moveEsquerda2:					; Movimenta cabeça para a esquerda
 		
 		sub r2,r5,r0
 
-		jmp checaMov
+		storei r3, r2
+		
+		jmp MovimentaFinal
 
-MovimentaFinal:				   	
-
-		; Zera tentativas
-		loadn r7, #tentativas
-		loadn r6, #0
-		storei r7, r6
+MovimentaFinal:				
 
 ;;;;;;;;;;;;;;;;;; rastro ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 		load r6, motoRastro1
@@ -652,6 +604,24 @@ loop1:	cmp r1,r2
 		jmp loop1
 		
 fimcenario: rts
+
+;constroiArt:
+
+;		loadn r0, #art ; Caracter que constitui a parede
+		
+;		loadn r1, #0
+;		loadn r2, #1200
+;						; Um loop percorre todo o vetor que constitui o cenрrio inicial declarado como 'muro'
+;loopart:	cmp r1,r2
+;		jeq fimart
+;		loadi r3,r0
+;		outchar r3,r1
+;		inc r1
+;		inc r0
+;		jmp loopart
+		
+;fimart: rts
+
 		
 FIM:		
 		halt
@@ -667,5 +637,3 @@ red_win: string "#########################################                      
 rastro_map: string "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "
 draw: string "#########################################                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                 DRAW                 ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ##                                      ######################################### "
 
-rastro_map: string "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "
-"                                                                                                                                                                                                                                                                                                                                                                                                                                             /$$$$$$$$$$$$$                        |$$$$$$$$$$$$$$$$     /$$$$    /$$$   $$    | $$  | $$   $$$  /$$ $$ | $$$$  $$  | $$  | $$$$$$$  | $$  $$ | $$  $$$$  | $$  | $$ $$$   | $$  |$$ | $$  $$$  | $$  | $$  $$$  |  $$$$$/ | $$   $$  |/  |/   $$$  ____/ |_/     _                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    "
