@@ -22,3 +22,7 @@ Em seguida, será gerado o .mif `tron2.mif` que pode ser executado no `simulador
 ```
 ./sim tron2.mif charmap.mif
 ```
+
+## Vídeo de apresentação
+
+https://www.youtube.com/watch?v=le2PJfxdrk0
