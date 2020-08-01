@@ -5,7 +5,7 @@ Tron game in assembly
 - Caio Marcos Chaves Viana - Número USP: 11208217
 - Guilherme Amaral Hiromoto - Número USP: 11218959
 - Paulo Matana da Rocha - Número USP: 10892676
-- Dennis Lenke Green - Número USP: 10101010
+- Dennis Lenke Green - Número USP: 11219108
 
 ![](https://i.imgur.com/E69n89x.png)
 
